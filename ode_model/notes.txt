@@ -1,0 +1,51 @@
+############################
+Cell cycle phase durations:
+Phase       hours   1/hour
+G1          10      0.1
+S           5-6     0.2
+G2          3-4     0.25
+M           2       0.5
+
+Reeference: https://www.sparknotes.com/biology/cellreproduction/cellcycle/section2/#targetText=Cells%20usually%20remain%20in%20G1,hours%20to%20complete%20S%20phase.
+
+############################
+cell_cycle_phase2.csv: Cell cycle data for phase 2 breast cancer cell lines and drugs
+
+
+############################
+drug metadata:
+/Users/maulik/Dropbox (HMS)/BrCaLines_profiling/Expansion/Library\ plate\ set\ up/master_plate_amended.csv
+
+cell_cycle_drugs = ['R03306', 
+                    'BMS265246',
+                    'LEE011_Ribociclib',
+                    'Abemaciclib_LY2835219', 
+                    'BSJ03124',
+                    'BSJ03123',
+                    'SY1365',
+                    'YKL5124',
+                    'THZ531',
+                    'THZ1',
+                    'senexinb',
+                    'ZZ133B',
+                    'BSJ01175',
+                    'MFH290',
+                    'E17',
+                    'FMF041072',
+                    'Flavopiridol',
+                    'LY2606368',
+                    'LY3023414',
+                    'AZD2014',
+                    'AZD5363',
+                    'CDK1_2iIII',
+                    'torin2'
+                    ]
+
+cell metadata:
+/Users/maulik/Dropbox (HMS)/brca_profiling_results/data/INPUT/rnaseq/metadata_combined.csv
+
+###########################
+Error mesage:
+ lsoda--  at t(=r1) and step size h(=r2), the error
+       test failed repeatedly or with abs(h) = hmin
+      in above,  r1 =  0.0000000000000D+00   r2 =  0.1238210531183D-04
