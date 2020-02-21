@@ -4,3 +4,9 @@
 venv/*
 *.xml
 *.iml
+petab_problem/.snakemake/*
+petab_problem/models/*
+petab_problem/petab/*
+petab_problem/results/*
+petab_problem/venv/*
+*.pyc

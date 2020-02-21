@@ -1,0 +1,70 @@
+import os
+import numpy as np
+
+N_THREADS = 8
+MODELS = ['cell_cycle_no_M_ridge',
+          'cell_cycle_no_M_washout_ridge']
+AGENTS = ['LEE011_Ribociclib', 'YKL-5-124']
+CELL_LINES = ['AU565', 'BT20']
+REGULARIZATION = np.logspace(1,4,7)
+
+SETTING = '{model}__{cell_line}__{agent}__lambda{regpar}'
+DEFAULTSETTING = SETTING.format(model=MODELS[0],
+                                cell_line=CELL_LINES[0],
+                                agent=AGENTS[0],
+                                regpar=REGULARIZATION[0])
+PARAMS = '{wildcards.model} {wildcards.cell_line} {wildcards.agent} {wildcards.regpar}'
+
+rule model:
+    input:
+        os.path.join('pysb', 'model_{model}.py'),
+        # we can use an arbitrary condition here
+        os.path.join('petab', f'{DEFAULTSETTING}.yaml'),
+        script='build_model.py',
+    output:
+        os.path.join('models', '{model}', '{model}', '{model}.py')
+    shell:
+        f'python3 {{input.script}} {{wildcards.model}} {CELL_LINES[0]} {AGENTS[0]} {REGULARIZATION[0]}'
+
+rule petab:
+    input:
+        os.path.join('data', 'cell_cycle_data.csv'),
+        script='process_petab.py',
+    output:
+        yaml=os.path.join('petab', f'{SETTING}.yaml'),
+        cond=os.path.join('petab', f'{SETTING}_conditions.tsv'),
+        par=os.path.join('petab', f'{SETTING}_parameters.tsv'),
+        meas=os.path.join('petab', f'{SETTING}_measurements.tsv'),
+        obs=os.path.join('petab', f'{SETTING}_observables.tsv'),
+    shell:
+        f'python3 {{input.script}} {PARAMS}'
+
+rule estimation:
+    input:
+        rules.model.output,
+        rules.petab.output.yaml,
+        rules.petab.output.cond,
+        rules.petab.output.par,
+        rules.petab.output.meas,
+        rules.petab.output.obs,
+        script='run_estimation.py'
+    output:
+        os.path.join('results', f'multistarts__{SETTING}.csv')
+    shell:
+        f'python3 {{input.script}} {PARAMS} {N_THREADS}'
+
+rule analysis:
+    input:
+        rules.estimation.output,
+        script='plot_rates.py'
+    output:
+        os.path.join('results', f'rate_deviation__{SETTING}.pdf')
+    shell:
+        f'python3 {{input.script}} {PARAMS}'
+         
+rule all:
+    input:
+        expand(rules.analysis.output, model=MODELS,
+                                      cell_line=CELL_LINES,
+                                      agent=AGENTS,
+                                      regpar=REGULARIZATION)
