@@ -67,11 +67,12 @@ vis_spec = pd.DataFrame({
         ['lin', 'lin', 'lin', 'lin',
          'log10', 'log10', 'log10', 'log10'],
     'xLabel':
-        ['time', 'time', 'time', 'time',
-         'concentration', 'concentration', 'concentration', 'concentration'],
+        ['time [h]', 'time [h]', 'time [h]', 'time [h]',
+         r'concentration [$\mu$M]', r'concentration [$\mu$M]',
+         r'concentration [$\mu$M]', r'concentration [$\mu$M]'],
     'yValues':
-        ['D_obs', 'S_obs', 'G1_obs', 'G2_obs',
-         'D_obs', 'S_obs', 'G1_obs', 'G2_obs'],
+        ['D_obs', 'S_obs', 'G1_obs', 'G2_plus_M_obs',
+         'D_obs', 'S_obs', 'G1_obs', 'G2_plus_M_obs'],
     'yLabel':
         ['cell count', 'cell count', 'cell count', 'cell count',
          'cell count', 'cell count', 'cell count', 'cell count'],
@@ -82,7 +83,7 @@ vis_spec = pd.DataFrame({
         ['D', 'S', 'G1', 'G2_plus_M',
          'D', 'S', 'G1', 'G2_plus_M'],
     'xOffset':
-        [-3, -1, 1, 3,
+        [0.0, 0.0, 0.0, 0.0,
          0.0, 0.0, 0.0, 0.0],
 })
 
