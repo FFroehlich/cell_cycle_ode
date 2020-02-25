@@ -53,7 +53,7 @@ rule estimation:
     shell:
         f'python3 {{input.script}} {PARAMS} {N_THREADS}'
 
-rule analysis:
+rule plot_rates:
     input:
         rules.estimation.output,
         script='plot_rates.py'
@@ -61,10 +61,23 @@ rule analysis:
         os.path.join('results', f'rate_deviation__{SETTING}.pdf')
     shell:
         f'python3 {{input.script}} {PARAMS}'
+
+rule plot_fit:
+    input:
+        rules.estimation.output,
+        script='plot_fit.py'
+    output:
+        os.path.join('results', f'simulation_and_data__{SETTING}.pdf')
+    shell:
+        f'python3 {{input.script}} {PARAMS}'
          
 rule all:
     input:
-        expand(rules.analysis.output, model=MODELS,
-                                      cell_line=CELL_LINES,
-                                      agent=AGENTS,
-                                      regpar=REGULARIZATION)
+         expand(rules.plot_rates.output, model=MODELS,
+                                         cell_line=CELL_LINES,
+                                         agent=AGENTS,
+                                         regpar=REGULARIZATION),
+         expand(rules.plot_fit.output, model=MODELS,
+                                       cell_line=CELL_LINES,
+                                       agent=AGENTS,
+                                       regpar=REGULARIZATION)

@@ -37,8 +37,14 @@ def get_measurements_df(df, model, cols):
             axis=1
         )
 
+    measurements['datasetId'] = measurements['simulationConditionId'].apply(
+        lambda x: 'control' if x == 'DMSO' else 'perturbation'
+    )
+
     measurements['observableParameters'] = ''
+    measurements['preequilibrationConditionId'] = ''
     measurements['noiseParameters'] = ''
+
     for simCond in measurements.simulationConditionId.unique():
         subset = measurements.query(f'simulationConditionId == "{simCond}"')
         for time in subset.time.unique():
@@ -60,10 +66,14 @@ def get_measurements_df(df, model, cols):
                 'observableId': expr.name,
                 'measurement': 0.0,
                 'simulationConditionId': simCond,
+                'preequilibrationConditionId': '',
                 'observableParameters': '',
                 'noiseParameters': '',
+                'datasetId': 'regularization'
             }, ignore_index=True)
 
+    measurements.drop(columns=['agent'], inplace=True)
+    measurements.sort_values('concentration', inplace=True)
     return measurements
 
 
@@ -75,9 +85,14 @@ def get_conditions_df(measurements):
             'rG1S': f'{cond}_rG1S' if cond != 'DMSO' else 1.0,
             'rSG2': f'{cond}_rSG2' if cond != 'DMSO' else 1.0,
             'rG2MG1': f'{cond}_rG2MG1' if cond != 'DMSO' else 1.0,
+            'concentration': measurements.loc[
+                (measurements['simulationConditionId'] == cond)
+                & (measurements['observableId'] == 'D_obs'), # avoid reg
+                'concentration'].values[0]
         }
         for cond in measurements['simulationConditionId'].unique()
     ])
+    conditions.sort_values('concentration', inplace=True)
     return conditions
 
 
@@ -135,16 +150,9 @@ def process_to_petab(df, model, regpar, prefix):
         model,
         ['G1', 'S', 'G2_plus_M', 'D']
     )
-    measurement_file = f'{prefix}_measurements.tsv'
-    measurements[['observableId', 'time', 'measurement', 'noiseParameters',
-                  'simulationConditionId', 'observableParameters']].to_csv(
-        os.path.join(petab_dir, measurement_file), sep='\t', index=False
-    )
-
     conditions = get_conditions_df(measurements)
-    condition_file = f'{prefix}_conditions.tsv'
-    conditions.to_csv(os.path.join(petab_dir, condition_file),
-                      sep='\t', index=False)
+
+    measurements.drop(columns=['concentration'], inplace=True)
 
     condition_pars = ['rphi', 'rSG2', 'rG1S', 'rG2MG1']
     baseline_pars = [par.name for par in model.parameters
@@ -154,9 +162,19 @@ def process_to_petab(df, model, regpar, prefix):
                                    baseline_pars,
                                    condition_pars,
                                    regpar)
+
+    measurement_file = f'{prefix}_measurements.tsv'
+    condition_file = f'{prefix}_conditions.tsv'
     parameter_file = f'{prefix}_parameters.tsv'
-    parameters.to_csv(os.path.join(petab_dir, parameter_file),
-                      sep='\t', index=False)
+
+    file_data = {
+        measurement_file: measurements,
+        condition_file: conditions,
+        parameter_file: parameters,
+    }
+    for file, data in file_data.items():
+        data.to_csv(os.path.join(petab_dir, file),
+                    sep='\t', index=False)
 
     return measurement_file, parameter_file, condition_file
 

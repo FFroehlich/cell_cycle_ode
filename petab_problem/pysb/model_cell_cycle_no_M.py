@@ -31,6 +31,8 @@ Rule('death', C() >> D(),
      Expression('ratedeath',
                 Parameter('kphi', 0.1) * Parameter('rphi', 0.1)))
 
+Parameter('concentration', 0.0)  # no effect but allows mapping
+
 Initial(C(cycle='G1'), Parameter('G1_0'))
 Initial(C(cycle='S'), Parameter('S_0'))
 Initial(C(cycle='G2'), Parameter('G2_0'))
